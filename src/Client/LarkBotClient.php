@@ -23,10 +23,10 @@ class LarkBotClient
 
     public function __construct($bot = 'default')
     {
-        $this->appId = config("services.lark.bots.{$bot}.app_id");
-        $this->appSecret = config("services.lark.bots.{$bot}.app_secret");
-        $this->allowedDomainNames = config("services.lark.bots.{$bot}.allowed_domain_names");
-        $this->basePath = config("services.lark.base_path");
+        $this->appId = config("larkbot.bots.{$bot}.app_id");
+        $this->appSecret = config("larkbot.bots.{$bot}.app_secret");
+        $this->allowedDomainNames = config("larkbot.bots.{$bot}.allowed_domain_names");
+        $this->basePath = config("larkbot.base_path");
     }
 
     /**

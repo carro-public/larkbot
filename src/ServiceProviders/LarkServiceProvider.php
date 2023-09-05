@@ -10,7 +10,7 @@ class LarkServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        $this->mergeConfigFrom(__DIR__ . './../../config/services.php', 'services');
+        $this->mergeConfigFrom(__DIR__ . './../../config/larkbot.php', 'larkbot');
 
         if (class_exists(SenderManager::class)) {
             SenderManager::extendSender('webhook', 'larkbot', fn () => new LarkAsNotificationSender(
