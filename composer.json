@@ -1,0 +1,18 @@
+{
+    "name": "carropublic/larkbot",
+    "require": {
+        "carropublic/notifications": "^1.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CarroPublic\\LarkBot\\ServiceProviders\\LarkServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "CarroPublic\\LarkBot\\": "src/"
+        }
+    }
+}
