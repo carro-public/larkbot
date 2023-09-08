@@ -35,17 +35,23 @@ class LarkBotClient
      */
     protected function getAuthToken()
     {
-        # Auth Token has 7200s expiration as default
-        return cache()->remember("lark-bot-token:{$this->appId}", 7200, function () {
-            $response = $this->execute('auth/v3/tenant_access_token/internal', 'post', [
-                'app_id' => $this->appId,
-                'app_secret' => $this->appSecret
-            ], true);
+        $tokenCacheKey = "lark-bot-token:{$this->appId}";
+        
+        if (cache()->has($tokenCacheKey)) {
+            return cache()->get($tokenCacheKey);
+        }
 
-            if (!$response->successful()) {
-                throw new \RuntimeException("Lark Bot Credential is invalid");
-            }
+        $response = $this->execute('auth/v3/tenant_access_token/internal', 'post', [
+            'app_id' => $this->appId,
+            'app_secret' => $this->appSecret
+        ], true);
 
+        if (!$response->successful()) {
+            throw new \RuntimeException("Lark Bot Credential is invalid");
+        }
+
+        # Expiration time 
+        return cache()->remember($tokenCacheKey, max((int) $response->json('expire') - 60, 1), function () use ($response) {
             return $response->json('tenant_access_token');
         });
     }
