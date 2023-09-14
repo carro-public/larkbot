@@ -23,8 +23,7 @@ class LarkAsNotificationSender extends Sender
             return false;
         }
 
-        /** @var LarkBotClient $lark */
-        $lark = app(LarkBotClient::class);
+        $lark = new LarkBotClient($to);
         /** @var Response $response */
         if (isset($message->extraPayload['parent_message_id'])) {
             $response = $lark->replyMessage($message->payload, 'interactive', $message->extraPayload['parent_message_id']);
@@ -42,6 +41,7 @@ class LarkAsNotificationSender extends Sender
         }
 
         if ($response && $response->failed()) {
+            $this->logger->info("Lark API Payload", compact('message', 'to'));
             throw new \Exception($response->body());
         }
 

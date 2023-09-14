@@ -2,6 +2,7 @@
 
 namespace CarroPublic\LarkBot\Client;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use CarroPublic\LarkBot\Client\Abilities\HasUserApis;
 use CarroPublic\LarkBot\Client\Abilities\HasGroupApis;
@@ -21,8 +22,16 @@ class LarkBotClient
 
     protected $allowedDomainNames;
 
-    public function __construct($bot = 'default')
+    public function __construct($botNameOrRecipient = 'default')
     {
+        $bots = config('larkbot.bots');
+        $botNames = array_keys($bots);
+        # If the bot name was specified correctly, use the bot name
+        if (!in_array($botNameOrRecipient, $botNames)) {
+            # Select the correct bot to use base on the org domain of recipient
+            $bot = collect($botNames)->first(fn ($botName) => Str::endsWith($botNameOrRecipient, $bots[$botName]['allowed_domain_names']), 'default');
+        }
+
         $this->appId = config("larkbot.bots.{$bot}.app_id");
         $this->appSecret = config("larkbot.bots.{$bot}.app_secret");
         $this->allowedDomainNames = config("larkbot.bots.{$bot}.allowed_domain_names");
@@ -36,7 +45,7 @@ class LarkBotClient
     protected function getAuthToken()
     {
         $tokenCacheKey = "lark-bot-token:{$this->appId}";
-        
+
         if (cache()->has($tokenCacheKey)) {
             return cache()->get($tokenCacheKey);
         }
