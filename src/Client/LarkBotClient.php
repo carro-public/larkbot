@@ -30,6 +30,8 @@ class LarkBotClient
         if (!in_array($botNameOrRecipient, $botNames)) {
             # Select the correct bot to use base on the org domain of recipient
             $bot = collect($botNames)->first(fn ($botName) => Str::endsWith($botNameOrRecipient, $bots[$botName]['allowed_domain_names']), 'default');
+        } else {
+            $bot = 'default';
         }
 
         $this->appId = config("larkbot.bots.{$bot}.app_id");
