@@ -5,6 +5,8 @@ return [
     'default_bot' => 'default',
 
     'base_path' => 'https://open.larksuite.com/open-apis/',
+    
+    'connect_timeout' => 2,
 
     /** All bot credentials */
     'bots' => [
