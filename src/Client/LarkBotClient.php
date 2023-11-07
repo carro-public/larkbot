@@ -76,7 +76,9 @@ class LarkBotClient
     public function execute($endpoint, $method = 'get', $payload = [], $withoutAuthToken = false)
     {
         return Http::withToken($withoutAuthToken ? null: $this->getAuthToken())
-            ->connectTimeout(config("larkbot.connect_timeout", 2))
+            ->withOptions([
+                'timeout' => config("larkbot.connect_timeout", 2),
+            ])
             ->withHeaders([
                 'Accept' => 'application/json',
             ])->{$method}($this->basePath . $endpoint, $payload);
