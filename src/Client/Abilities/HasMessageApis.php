@@ -37,7 +37,7 @@ trait HasMessageApis
      */
     public function replyMessage($payload, $msg_type, $parent_id)
     {
-        return $this->execute("/im/v1/messages/{$parent_id}/reply", 'POST', [
+        return $this->selectDefaultBot()->execute("/im/v1/messages/{$parent_id}/reply", 'POST', [
             'msg_type' => $msg_type,
             'content' => is_string($payload) ? $payload : json_encode($payload),
         ]);

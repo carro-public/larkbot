@@ -15,7 +15,7 @@ trait HasUserApis
      */
     public function getUserIdFromEmails($emails)
     {
-        $response = $this->execute('/contact/v3/users/batch_get_id', 'POST', [
+        $response = $this->selectDefaultBot()->execute('/contact/v3/users/batch_get_id', 'POST', [
             'emails' => Arr::wrap($emails),
         ]);
 

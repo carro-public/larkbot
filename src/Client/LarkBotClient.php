@@ -4,7 +4,6 @@ namespace CarroPublic\LarkBot\Client;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Response;
 use CarroPublic\LarkBot\Client\Abilities\HasUserApis;
 use CarroPublic\LarkBot\Client\Abilities\HasGroupApis;
@@ -12,6 +11,8 @@ use CarroPublic\LarkBot\Client\Abilities\HasMessageApis;
 
 class LarkBotClient
 {
+    use HasUserApis, HasGroupApis, HasMessageApis;
+    
     /**
      * @var Collection | Array<Bot>
      */
@@ -35,10 +36,21 @@ class LarkBotClient
                 )
             ];
         });
-        
-        $this->selectBotByName(config('larkbot.default_bot'));
+
+        $this->selectDefaultBot();
     }
 
+    /**
+     * @param $name
+     * @return LarkBotClient
+     */
+    public function selectDefaultBot()
+    {
+        $this->currentBot = $this->bots->get(config('larkbot.default_bot'));
+
+        return $this;
+    }
+    
     /**
      * @param $name
      * @return LarkBotClient
