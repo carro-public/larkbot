@@ -16,6 +16,7 @@ class LarkAsNotificationSender extends Sender
      * @param $to
      * @param WebhookMessage $message
      * @return bool|mixed
+     * @throws \Exception
      */
     public function send($to, Message $message)
     {
@@ -23,7 +24,7 @@ class LarkAsNotificationSender extends Sender
             return false;
         }
 
-        $lark = new LarkBotClient($to);
+        $lark = new LarkBotClient();
         /** @var Response $response */
         if (isset($message->extraPayload['parent_message_id'])) {
             $response = $lark->replyMessage($message->payload, 'interactive', $message->extraPayload['parent_message_id']);
@@ -40,8 +41,21 @@ class LarkAsNotificationSender extends Sender
             );
         }
 
-        if ($response && $response->failed()) {
+        if ($response && $response->serverError()) {
             $this->logger->info("Lark API Payload", compact('message', 'to'));
+            
+            throw new \Exception($response->body());
+        }
+        
+        if ($response && $response->clientError()) {
+            $this->logger->info("Lark API Payload", compact('message', 'to'));
+
+            # If the error is invalid receive_id, and we should skip it, return response instead of throw Exception
+            if ($response->json('msg') == 'Your request contains an invalid request parameter, ext=invalid receive_id: 0' 
+                && config('larkbot.skip_invalid_receiver_error')) {
+                return $response;
+            }
+
             throw new \Exception($response->body());
         }
 

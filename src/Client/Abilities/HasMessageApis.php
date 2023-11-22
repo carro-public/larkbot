@@ -4,6 +4,7 @@ namespace CarroPublic\LarkBot\Client\Abilities;
 
 use Illuminate\Support\Str;
 use Illuminate\Http\Client\Response;
+use Psr\Http\Client\ClientExceptionInterface;
 
 trait HasMessageApis
 {

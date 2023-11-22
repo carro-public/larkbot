@@ -16,4 +16,6 @@ return [
             'allowed_domain_names' => explode(',', env('LARK_BOT_ALLOWED_DOMAIN_NAMES', '')),
         ]
     ],
+    
+    'skip_invalid_receiver_error' => env('LARK_BOT_SKIP_INVALID_RECEIVER', true),
 ];
