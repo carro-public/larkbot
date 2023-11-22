@@ -61,10 +61,11 @@ trait HasMessageApis
             $receiver_id_type = 'chat_id';
         }
 
-        return $this->execute("/im/v1/messages?receive_id_type={$receiver_id_type}", 'POST', [
-            'receive_id' => $receiver_id,
-            'msg_type' => $msg_type,
-            'content' => is_string($payload) ? $payload : json_encode($payload),
-        ]);
+        return $this->selectBotByEmail($receiver_id)
+            ->execute("/im/v1/messages?receive_id_type={$receiver_id_type}", 'POST', [
+                'receive_id' => $receiver_id,
+                'msg_type' => $msg_type,
+                'content' => is_string($payload) ? $payload : json_encode($payload),
+            ]);
     }
 }

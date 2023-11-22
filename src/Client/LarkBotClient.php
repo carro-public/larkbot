@@ -3,84 +3,77 @@
 namespace CarroPublic\LarkBot\Client;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\Response;
 use CarroPublic\LarkBot\Client\Abilities\HasUserApis;
 use CarroPublic\LarkBot\Client\Abilities\HasGroupApis;
 use CarroPublic\LarkBot\Client\Abilities\HasMessageApis;
 
 class LarkBotClient
 {
-    use HasUserApis, HasGroupApis, HasMessageApis;
+    /**
+     * @var Collection | Array<Bot>
+     */
+    protected Collection $bots;
 
-    protected $httpClient;
+    /**
+     * The current bot to be used
+     * @var Bot $currentBot
+     */
+    protected $currentBot;
 
-    protected $appId;
-
-    protected $appSecret;
-
-    protected $basePath;
-
-    protected $allowedDomainNames;
-
-    public function __construct($botNameOrRecipient = 'default')
+    public function __construct()
     {
-        $bots = config('larkbot.bots');
-        $botNames = array_keys($bots);
-        # If the bot name was specified correctly, use the bot name
-        if (!in_array($botNameOrRecipient, $botNames)) {
-            # Select the correct bot to use base on the org domain of recipient
-            $bot = collect($botNames)->first(fn ($botName) => Str::endsWith($botNameOrRecipient, $bots[$botName]['allowed_domain_names']), 'default');
-        } else {
-            $bot = 'default';
-        }
-
-        $this->appId = config("larkbot.bots.{$bot}.app_id");
-        $this->appSecret = config("larkbot.bots.{$bot}.app_secret");
-        $this->allowedDomainNames = config("larkbot.bots.{$bot}.allowed_domain_names");
-        $this->basePath = config("larkbot.base_path");
+        $this->bots = collect(config('larkbot.bots', []))->mapWithKeys(function ($botCredentials, $botName) {
+            return [
+                $botName => new Bot(
+                    config("larkbot.bots.{$botName}.app_id"),
+                    config("larkbot.bots.{$botName}.app_secret"),
+                    config("larkbot.bots.{$botName}.allowed_domain_names"),
+                    config("larkbot.base_path")
+                )
+            ];
+        });
+        
+        $this->selectBotByName(config('larkbot.default_bot'));
     }
 
     /**
-     * Get Auth Token
-     * @return string
+     * @param $name
+     * @return LarkBotClient
      */
-    protected function getAuthToken()
+    public function selectBotByName($name)
     {
-        $tokenCacheKey = "lark-bot-token:{$this->appId}";
+        $this->currentBot = $this->bots->get($name);
+        
+        return $this;
+    }
 
-        if (cache()->has($tokenCacheKey)) {
-            return cache()->get($tokenCacheKey);
+    /**
+     * @param $domain
+     * @return $this
+     */
+    public function selectBotByEmail($email)
+    {
+        if (!Str::contains($email, '@')) {
+            return $this;
         }
-
-        $response = $this->execute('auth/v3/tenant_access_token/internal', 'post', [
-            'app_id' => $this->appId,
-            'app_secret' => $this->appSecret
-        ], true);
-
-        if (!$response->successful()) {
-            throw new \RuntimeException("Lark Bot Credential is invalid");
-        }
-
-        # Expiration time 
-        return cache()->remember($tokenCacheKey, max((int) $response->json('expire') - 60, 1), function () use ($response) {
-            return $response->json('tenant_access_token');
-        });
+        
+        $this->currentBot = $this->bots->first(fn ($botName) => Str::endsWith($email, $this->bots[$botName]->getAllowedDomainNames()), config('larkbot.default_bot'));
+        
+        return $this;
     }
 
     /**
      * @param $endpoint
      * @param $method
      * @param $payload
-     * @return \Illuminate\Http\Client\Response
+     * @param $withoutAuthToken
+     * @return Response
      */
     public function execute($endpoint, $method = 'get', $payload = [], $withoutAuthToken = false)
     {
-        return Http::withToken($withoutAuthToken ? null: $this->getAuthToken())
-            ->withOptions([
-                'timeout' => config("larkbot.connect_timeout", 2),
-            ])
-            ->withHeaders([
-                'Accept' => 'application/json',
-            ])->{$method}($this->basePath . $endpoint, $payload);
+        return $this->currentBot->sendRequest($endpoint, $method, $payload, $withoutAuthToken);
     }
 }
