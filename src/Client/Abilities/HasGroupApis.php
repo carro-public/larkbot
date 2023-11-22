@@ -39,7 +39,7 @@ trait HasGroupApis
      */
     public function getUsersInGroup($groupId, $pageToken = null)
     {
-        return $this->execute("im/v1/chats/{$groupId}/members", 'GET', [
+        return $this->selectDefaultBot()->execute("im/v1/chats/{$groupId}/members", 'GET', [
             'page_size' => 100,
             'page_token' => $pageToken,
         ]);

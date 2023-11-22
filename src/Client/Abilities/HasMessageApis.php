@@ -4,6 +4,7 @@ namespace CarroPublic\LarkBot\Client\Abilities;
 
 use Illuminate\Support\Str;
 use Illuminate\Http\Client\Response;
+use Psr\Http\Client\ClientExceptionInterface;
 
 trait HasMessageApis
 {
@@ -36,7 +37,7 @@ trait HasMessageApis
      */
     public function replyMessage($payload, $msg_type, $parent_id)
     {
-        return $this->execute("/im/v1/messages/{$parent_id}/reply", 'POST', [
+        return $this->selectDefaultBot()->execute("/im/v1/messages/{$parent_id}/reply", 'POST', [
             'msg_type' => $msg_type,
             'content' => is_string($payload) ? $payload : json_encode($payload),
         ]);
@@ -61,10 +62,11 @@ trait HasMessageApis
             $receiver_id_type = 'chat_id';
         }
 
-        return $this->execute("/im/v1/messages?receive_id_type={$receiver_id_type}", 'POST', [
-            'receive_id' => $receiver_id,
-            'msg_type' => $msg_type,
-            'content' => is_string($payload) ? $payload : json_encode($payload),
-        ]);
+        return $this->selectBotByEmail($receiver_id)
+            ->execute("/im/v1/messages?receive_id_type={$receiver_id_type}", 'POST', [
+                'receive_id' => $receiver_id,
+                'msg_type' => $msg_type,
+                'content' => is_string($payload) ? $payload : json_encode($payload),
+            ]);
     }
 }
