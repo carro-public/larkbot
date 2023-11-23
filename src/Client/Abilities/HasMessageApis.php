@@ -54,16 +54,16 @@ trait HasMessageApis
     {
         if (Str::contains($receiver_id, "@")) {
             $receiver_id_type = 'email';
+            $this->selectBotByEmail($receiver_id);
             # If the receiver is not in allowed emails, do not send
-            if (!in_array(data_get(explode("@", $receiver_id), 1), $this->allowedDomainNames)) {
+            if (!in_array(data_get(explode("@", $receiver_id), 1), $this->currentBot->getAllowedDomainNames())) {
                 return null;
             }
         } else {
             $receiver_id_type = 'chat_id';
         }
 
-        return $this->selectBotByEmail($receiver_id)
-            ->execute("/im/v1/messages?receive_id_type={$receiver_id_type}", 'POST', [
+        return $this->execute("/im/v1/messages?receive_id_type={$receiver_id_type}", 'POST', [
                 'receive_id' => $receiver_id,
                 'msg_type' => $msg_type,
                 'content' => is_string($payload) ? $payload : json_encode($payload),

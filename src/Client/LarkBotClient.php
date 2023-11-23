@@ -72,7 +72,7 @@ class LarkBotClient
             return $this;
         }
         
-        $this->currentBot = $this->bots->first(fn ($botName) => Str::endsWith($email, $this->bots[$botName]->getAllowedDomainNames()), config('larkbot.default_bot'));
+        $this->currentBot = $this->bots->first(fn (Bot $bot) => Str::endsWith($email, $bot->getAllowedDomainNames()), config('larkbot.default_bot'));
         
         return $this;
     }
