@@ -71,9 +71,14 @@ class LarkBotClient
         if (!Str::contains($email, '@')) {
             return $this;
         }
-        
-        $this->currentBot = $this->bots->first(fn (Bot $bot) => Str::endsWith($email, $bot->getAllowedDomainNames()), config('larkbot.default_bot'));
-        
+
+        $this->currentBot = $this->bots->first(fn (Bot $bot) => Str::endsWith($email, $bot->getAllowedDomainNames()));
+
+        # Use default bot as default if can't find any available bot
+        if (empty($this->currentBot)) {
+            $this->selectDefaultBot();
+        }
+
         return $this;
     }
 
