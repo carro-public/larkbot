@@ -77,7 +77,7 @@ class LarkBotClient
         # Use default bot as default if can't find any available bot
         if (empty($this->currentBot)) {
             $this->selectDefaultBot();
-        }   
+        }
 
         return $this;
     }
