@@ -32,7 +32,7 @@ class LarkBotClient
                     config("larkbot.bots.{$botName}.app_id"),
                     config("larkbot.bots.{$botName}.app_secret"),
                     config("larkbot.bots.{$botName}.allowed_domain_names"),
-                    config("larkbot.base_path"),
+                    Str::beforeLast(config("larkbot.base_path"), '/'),
                 )
             ];
         });
