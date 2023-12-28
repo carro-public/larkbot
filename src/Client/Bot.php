@@ -73,6 +73,6 @@ class Bot
             ])
             ->withHeaders([
                 'Accept' => 'application/json',
-            ])->{$method}($this->basePath . $endpoint, $payload);
+            ])->{$method}($this->basePath . '/' . ltrim($endpoint), $payload);
     }
 }
