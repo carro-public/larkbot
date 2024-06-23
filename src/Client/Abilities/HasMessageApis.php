@@ -15,14 +15,14 @@ trait HasMessageApis
      * @param $msg_type
      * @return Response
      */
-    public function sendMessage($payload, $receiver_id, $msg_type)
+    public function sendMessage($payload, $receiver_id, $msg_type, $buzzedList = [])
     {
         if (Str::contains($receiver_id, ",")) {
             foreach (explode(",", $receiver_id) as $chat_id) {
-                $this->sendToChatId($payload, $chat_id, $msg_type);
+                $this->sendToChatId($payload, $chat_id, $msg_type, $buzzedList);
             }
         } else {
-            return $this->sendToChatId($payload, $receiver_id, $msg_type);
+            return $this->sendToChatId($payload, $receiver_id, $msg_type, $buzzedList);
         }
 
         return null;
@@ -44,13 +44,25 @@ trait HasMessageApis
     }
 
     /**
+     * @param $messageId
+     * @param $userList
+     * @return Response
+     */
+    public function buzzMessage($messageId, $userList = [])
+    {
+        return $this->execute("im/v1/messages/{$messageId}/urgent_app?user_id_type=user_id", 'POST', [
+            'user_id_list' => $this->getUserIdFromEmails($userList)->values()->toArray(),
+        ]);
+    }
+
+    /**
      * Send message to a single chat_id, support email and chat_id
      * @param $payload
      * @param $receiver_id
      * @param $msg_type
      * @return Response
      */
-    protected function sendToChatId($payload, $receiver_id, $msg_type)
+    protected function sendToChatId($payload, $receiver_id, $msg_type, $buzzedList = [])
     {
         if (Str::contains($receiver_id, "@")) {
             $receiver_id_type = 'email';
@@ -63,10 +75,17 @@ trait HasMessageApis
             $receiver_id_type = 'chat_id';
         }
 
-        return $this->execute("/im/v1/messages?receive_id_type={$receiver_id_type}", 'POST', [
-                'receive_id' => $receiver_id,
-                'msg_type' => $msg_type,
-                'content' => is_string($payload) ? $payload : json_encode($payload),
-            ]);
+        return tap($this->execute("/im/v1/messages?receive_id_type={$receiver_id_type}", 'POST', [
+            'receive_id' => $receiver_id,
+            'msg_type' => $msg_type,
+            'content' => is_string($payload) ? $payload : json_encode($payload),
+        ]), function (Response $response) use ($buzzedList, $receiver_id) {
+            if (!empty($buzzedList)) {
+                return;
+            }
+            
+            $messageId = $response->json('data.message_id');
+            $this->buzzMessage($messageId, $buzzedList);
+        });
     }
 }
