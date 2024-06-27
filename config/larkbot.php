@@ -17,5 +17,5 @@ return [
         ]
     ],
     
-    'skip_invalid_receiver_error' => env('LARK_BOT_SKIP_INVALID_RECEIVER', true),
+    'skippable_error_codes' => env('LARK_BOT_SKIPPABLE_ERROR_CODES', '230001'),
 ];

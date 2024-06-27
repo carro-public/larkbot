@@ -49,10 +49,10 @@ class LarkAsNotificationSender extends Sender
         
         if ($response && $response->clientError()) {
             $this->logger->info("Lark API Payload", compact('message', 'to'));
+            $skippableErrorCodes = explode(',', config('larkbot.skippable_error_codes'));
 
-            # If the error is invalid receive_id, and we should skip it, return response instead of throw Exception
-            if ($response->json('msg') == 'Your request contains an invalid request parameter, ext=invalid receive_id: 0' 
-                && config('larkbot.skip_invalid_receiver_error')) {
+            # If we allow to skip those client error codes
+            if (in_array($response->json('code'), $skippableErrorCodes)) {
                 return $response;
             }
 
