@@ -43,6 +43,15 @@ trait HasMessageApis
         ]);
     }
 
+    public function reactMessage($messageId, $emojiType)
+    {
+        $this->execute("/im/v1/messages/{$messageId}/reactions", 'POST', [
+            'reaction_type' => [
+                'emoji_type' => $emojiType,
+            ]
+        ]);
+    }
+
     /**
      * @param $messageId
      * @param $userList
