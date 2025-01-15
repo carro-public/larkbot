@@ -81,14 +81,23 @@ trait HasMessageApis
     protected function sendToChatId($payload, $receiver_id, $msg_type, $buzzedList = [])
     {
         if (Str::contains($receiver_id, "@")) {
-            $receiver_id_type = 'email';
             $this->selectBotByEmail($receiver_id);
             # If the receiver is not in allowed emails, do not send
             if (!in_array(data_get(explode("@", $receiver_id), 1), $this->currentBot->getAllowedDomainNames())) {
                 return null;
             }
-        } else {
-            $receiver_id_type = 'chat_id';
+        }
+        
+        switch (true) {
+            case Str::contains($receiver_id, "@"):
+                $receiver_id_type = 'email';
+                break;
+            case Str::startsWith($receiver_id, "ou_"):
+                $receiver_id_type = 'open_id';
+                break;
+            default:
+                $receiver_id_type = 'chat_id';
+                break;
         }
 
         return tap($this->execute("/im/v1/messages?receive_id_type={$receiver_id_type}", 'POST', [
