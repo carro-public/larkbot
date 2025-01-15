@@ -43,6 +43,13 @@ trait HasMessageApis
         ]);
     }
 
+    /**
+     * Send an emoji to the message
+     * https://open.larksuite.com/document/server-docs/im-v1/message-reaction/emojis-introduce
+     * @param $messageId
+     * @param $emojiType
+     * @return void
+     */
     public function reactMessage($messageId, $emojiType)
     {
         $this->execute("/im/v1/messages/{$messageId}/reactions", 'POST', [
