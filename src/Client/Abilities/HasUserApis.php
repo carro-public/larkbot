@@ -8,6 +8,18 @@ use Illuminate\Support\Collection;
 trait HasUserApis
 {
     /**
+     * Get User Detail
+     * @param $openId
+     * @return mixed
+     */
+    public function getUserFromId($openId)
+    {
+        $response = $this->selectDefaultBot()->execute("/contact/v3/users/{$openId}?department_id_type=open_department_id&user_id_type=open_id");
+
+        return $response->json('data');
+    }
+    
+    /**
      * Get UserID from Email
      * @param $emails
      * @param $mobiles
