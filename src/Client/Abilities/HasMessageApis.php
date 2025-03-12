@@ -66,7 +66,7 @@ trait HasMessageApis
      */
     public function buzzMessage($messageId, $userList = [])
     {
-        return $this->execute("im/v1/messages/{$messageId}/urgent_app?user_id_type=user_id", 'POST', [
+        return $this->execute("im/v1/messages/{$messageId}/urgent_app?user_id_type=open_id", 'PATCH', [
             'user_id_list' => $this->getUserIdFromEmails($userList)->values()->toArray(),
         ]);
     }
