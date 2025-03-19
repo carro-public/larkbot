@@ -105,7 +105,7 @@ trait HasMessageApis
             'msg_type' => $msg_type,
             'content' => is_string($payload) ? $payload : json_encode($payload),
         ]), function (Response $response) use ($buzzedList, $receiver_id) {
-            if (!empty($buzzedList)) {
+            if (empty($buzzedList)) {
                 return;
             }
             
