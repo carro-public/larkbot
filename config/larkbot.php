@@ -6,7 +6,11 @@ return [
 
     'base_path' => 'https://open.larksuite.com/open-apis',
     
-    'connect_timeout' => 2,
+    'connection_options' => [
+        'connect_timeout' => env('LARKBOT_CONNECT_TIMEOUT', 2),
+        'retries' => env('LARKBOT_CONNECT_RETRIES', 3),
+        'backoff' => env('LARKBOT_CONNECT_RETRIES_BACKOFF', 5000),
+    ],
 
     /** All bot credentials */
     'bots' => [

@@ -67,9 +67,10 @@ class Bot
      */
     public function sendRequest($endpoint, $method = 'get', $payload = [], $withoutAuthToken = false)
     {
-        return Http::withToken($withoutAuthToken ? null: $this->getAuthToken())
+        return Http::retry(config("larkbot.connection_options.retries", 2), config("larkbot.connection_options.backoff", 5000), )
+            ->withToken($withoutAuthToken ? null: $this->getAuthToken())
             ->withOptions([
-                'timeout' => config("larkbot.connect_timeout", 2),
+                'timeout' => config("larkbot.connection_options.connect_timeout", 2),
             ])
             ->withHeaders([
                 'Accept' => 'application/json',
